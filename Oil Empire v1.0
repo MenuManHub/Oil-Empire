@@ -30,6 +30,14 @@ local SellRemote = ReplicatedStorage
     :WaitForChild("RE")
     :WaitForChild("SellGas")
 
+local PurchaseRemote = ReplicatedStorage
+    :WaitForChild("Packages")
+    :WaitForChild("Knit")
+    :WaitForChild("Services")
+    :WaitForChild("StoresService")
+    :WaitForChild("RE")
+    :WaitForChild("Purchase")
+
 local PlotsFolder = Workspace:WaitForChild("Plots")
 
 --// Defaults
@@ -58,6 +66,11 @@ local InstantStealEnabled = false
 local AutoReturnAfterStealEnabled = true
 
 local BestRefineryESPEnabled = false
+
+--// Drill State
+local DrillPurchaseEnabled = {}
+local DrillPurchaseLoopIds = {}
+local DrillPurchaseDelay = 0.15
 
 --// Storage
 local OriginalStealDurations = {}
@@ -760,6 +773,62 @@ local function bindAllStealPrompts()
 end
 
 --// =========================================================
+--// Drill Purchase Helpers
+--// =========================================================
+
+local DrillNames = {
+    "Basic Drill",
+    "Strong Drill",
+    "Enhanced Drill",
+    "Speed Drill",
+    "Reinforced Drill",
+    "Industrial Drill",
+    "Double Industrial Drill",
+    "Turbo Drill",
+    "Mega Drill",
+    "Mega Emerald Drill",
+    "Hell Drill",
+    "Plasma Drill",
+    "Huge Long Drill",
+    "Mega Plasma Drill",
+    "Multi Drill",
+    "Lava Drill",
+    "Ice Plasma Drill",
+    "Crystal Drill",
+    "Diamond Drill",
+    "Ruby Drill"
+}
+
+local function purchaseDrill(drillName)
+    local args = {
+        "DrillShop",
+        drillName
+    }
+
+    pcall(function()
+        PurchaseRemote:FireServer(unpack(args))
+    end)
+end
+
+local function startDrillPurchaseLoop(drillName)
+    DrillPurchaseLoopIds[drillName] = (DrillPurchaseLoopIds[drillName] or 0) + 1
+    local thisLoopId = DrillPurchaseLoopIds[drillName]
+    DrillPurchaseEnabled[drillName] = true
+
+    task.spawn(function()
+        while DrillPurchaseEnabled[drillName] and DrillPurchaseLoopIds[drillName] == thisLoopId do
+            purchaseDrill(drillName)
+            task.wait(DrillPurchaseDelay)
+        end
+    end)
+end
+
+local function stopDrillPurchaseLoop(drillName)
+    DrillPurchaseEnabled[drillName] = false
+    DrillPurchaseLoopIds[drillName] = (DrillPurchaseLoopIds[drillName] or 0) + 1
+end
+
+--// =========================================================
 --// UI
 --// =========================================================
 
@@ -801,6 +870,7 @@ local Window = Rayfield:CreateWindow({
 
 local PlayerTab = Window:CreateTab("Player", 4483362458)
 local GameTab = Window:CreateTab("Game", 4483362458)
+local DrillsTab = Window:CreateTab("Drills", 4483362458)
 local MiscTab = Window:CreateTab("Misc", 4483362458)
 
 --// =========================================================
@@ -1113,6 +1183,41 @@ GameTab:CreateButton({
         updateBestRefineryESP()
     end,
 })
+
+--// =========================================================
+--// Drills Tab
+--// =========================================================
+
+DrillsTab:CreateSection("Drills")
+
+DrillsTab:CreateSlider({
+    Name = "Purchase Delay",
+    Range = {1, 20},
+    Increment = 1,
+    CurrentValue = 2,
+    Flag = "DrillPurchaseDelaySlider",
+    Callback = function(Value)
+        DrillPurchaseDelay = Value / 100
+    end,
+})
+
+for _, drillName in ipairs(DrillNames) do
+    DrillPurchaseEnabled[drillName] = false
+    DrillPurchaseLoopIds[drillName] = 0
+
+    DrillsTab:CreateToggle({
+        Name = drillName,
+        CurrentValue = false,
+        Flag = "DrillToggle_" .. drillName:gsub("%s+", "_"),
+        Callback = function(Value)
+            if Value then
+                startDrillPurchaseLoop(drillName)
+            else
+                stopDrillPurchaseLoop(drillName)
+            end
+        end,
+    })
+end
 
 --// =========================================================
 --// Misc Tab
