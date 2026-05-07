@@ -797,6 +797,10 @@ local DrillNames = {
     "Crystal Drill",
     "Diamond Drill",
     "Ruby Drill"
+    "Fusion Drill",
+    "Uranium Drill",
+    "Radium Drill",
+    "Palladium Drill"
 }
 
 local function purchaseDrill(drillName)
