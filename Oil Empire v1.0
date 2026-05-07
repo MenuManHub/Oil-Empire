@@ -773,7 +773,7 @@ local function bindAllStealPrompts()
 end
 
 --// =========================================================
---// Drill Purchase Helpers
+--// Shop Purchase Helpers
 --// =========================================================
 
 local DrillNames = {
@@ -803,10 +803,17 @@ local DrillNames = {
     "Palladium Drill"
 }
 
-local function purchaseDrill(drillName)
+local DecorNames = {
+    "Basic Wind Turbine",
+    "Medium Wind Turbine",
+    "Golden Wind Turbine",
+    "Big Wind Turbine"
+}
+
+local function purchaseShopItem(shopName, itemName)
     local args = {
-        "DrillShop",
-        drillName
+        shopName,
+        itemName
     }
 
     pcall(function()
@@ -814,22 +821,50 @@ local function purchaseDrill(drillName)
     end)
 end
 
-local function startDrillPurchaseLoop(drillName)
-    DrillPurchaseLoopIds[drillName] = (DrillPurchaseLoopIds[drillName] or 0) + 1
-    local thisLoopId = DrillPurchaseLoopIds[drillName]
-    DrillPurchaseEnabled[drillName] = true
+local function purchaseDrill(drillName)
+    purchaseShopItem("DrillShop", drillName)
+end
+
+local function purchaseDecor(decorName)
+    purchaseShopItem("DecorationShop", decorName)
+end
+
+local function startShopPurchaseLoop(stateKey, purchaseCallback)
+    DrillPurchaseLoopIds[stateKey] = (DrillPurchaseLoopIds[stateKey] or 0) + 1
+    local thisLoopId = DrillPurchaseLoopIds[stateKey]
+    DrillPurchaseEnabled[stateKey] = true
 
     task.spawn(function()
-        while DrillPurchaseEnabled[drillName] and DrillPurchaseLoopIds[drillName] == thisLoopId do
-            purchaseDrill(drillName)
+        while DrillPurchaseEnabled[stateKey] and DrillPurchaseLoopIds[stateKey] == thisLoopId do
+            purchaseCallback()
             task.wait(DrillPurchaseDelay)
         end
     end)
 end
 
+local function stopShopPurchaseLoop(stateKey)
+    DrillPurchaseEnabled[stateKey] = false
+    DrillPurchaseLoopIds[stateKey] = (DrillPurchaseLoopIds[stateKey] or 0) + 1
+end
+
+local function startDrillPurchaseLoop(drillName)
+    startShopPurchaseLoop("Drill_" .. drillName, function()
+        purchaseDrill(drillName)
+    end)
+end
+
 local function stopDrillPurchaseLoop(drillName)
-    DrillPurchaseEnabled[drillName] = false
-    DrillPurchaseLoopIds[drillName] = (DrillPurchaseLoopIds[drillName] or 0) + 1
+    stopShopPurchaseLoop("Drill_" .. drillName)
+end
+
+local function startDecorPurchaseLoop(decorName)
+    startShopPurchaseLoop("Decor_" .. decorName, function()
+        purchaseDecor(decorName)
+    end)
+end
+
+local function stopDecorPurchaseLoop(decorName)
+    stopShopPurchaseLoop("Decor_" .. decorName)
 end
 
 --// =========================================================
@@ -875,6 +910,7 @@ local Window = Rayfield:CreateWindow({
 local PlayerTab = Window:CreateTab("Player", 4483362458)
 local GameTab = Window:CreateTab("Game", 4483362458)
 local DrillsTab = Window:CreateTab("Drills", 4483362458)
+local DecorTab = Window:CreateTab("Decor", 4483362458)
 local MiscTab = Window:CreateTab("Misc", 4483362458)
 
 --// =========================================================
@@ -1199,15 +1235,16 @@ DrillsTab:CreateSlider({
     Range = {1, 20},
     Increment = 1,
     CurrentValue = 2,
-    Flag = "DrillPurchaseDelaySlider",
+    Flag = "ShopPurchaseDelaySlider",
     Callback = function(Value)
         DrillPurchaseDelay = Value / 100
     end,
 })
 
 for _, drillName in ipairs(DrillNames) do
-    DrillPurchaseEnabled[drillName] = false
-    DrillPurchaseLoopIds[drillName] = 0
+    local stateKey = "Drill_" .. drillName
+    DrillPurchaseEnabled[stateKey] = false
+    DrillPurchaseLoopIds[stateKey] = 0
 
     DrillsTab:CreateToggle({
         Name = drillName,
@@ -1218,6 +1255,31 @@ for _, drillName in ipairs(DrillNames) do
                 startDrillPurchaseLoop(drillName)
             else
                 stopDrillPurchaseLoop(drillName)
+            end
+        end,
+    })
+end
+
+--// =========================================================
+--// Decor Tab
+--// =========================================================
+
+DecorTab:CreateSection("Decor")
+
+for _, decorName in ipairs(DecorNames) do
+    local stateKey = "Decor_" .. decorName
+    DrillPurchaseEnabled[stateKey] = false
+    DrillPurchaseLoopIds[stateKey] = 0
+
+    DecorTab:CreateToggle({
+        Name = decorName,
+        CurrentValue = false,
+        Flag = "DecorToggle_" .. decorName:gsub("%s+", "_"),
+        Callback = function(Value)
+            if Value then
+                startDecorPurchaseLoop(decorName)
+            else
+                stopDecorPurchaseLoop(decorName)
             end
         end,
     })
