@@ -796,7 +796,7 @@ local DrillNames = {
     "Ice Plasma Drill",
     "Crystal Drill",
     "Diamond Drill",
-    "Ruby Drill"
+    "Ruby Drill",
     "Fusion Drill",
     "Uranium Drill",
     "Radium Drill",
