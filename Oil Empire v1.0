@@ -14,6 +14,62 @@ local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
 local Camera = Workspace.CurrentCamera
 
+--// Custom Theme Colors
+local ThemeBackground = Color3.fromRGB(6, 14, 32)
+local ThemeBackgroundDark = Color3.fromRGB(3, 8, 20)
+local ThemePanel = Color3.fromRGB(10, 23, 50)
+local ThemePanelHover = Color3.fromRGB(14, 32, 68)
+local ThemeStroke = Color3.fromRGB(255, 48, 76)
+local ThemeStrokeDark = Color3.fromRGB(110, 18, 32)
+local ThemeText = Color3.fromRGB(235, 245, 255)
+local ThemeSubText = Color3.fromRGB(170, 200, 230)
+local ThemeRed = Color3.fromRGB(255, 45, 70)
+local ThemeGreen = Color3.fromRGB(35, 255, 110)
+local ThemeBlue = Color3.fromRGB(35, 120, 255)
+local ThemeGlow = Color3.fromRGB(255, 30, 60)
+
+local DarkBlueRedTheme = {
+    TextColor = ThemeText,
+
+    Background = ThemeBackground,
+    Topbar = ThemeBackgroundDark,
+    Shadow = ThemeGlow,
+
+    NotificationBackground = ThemePanel,
+    NotificationActionsBackground = ThemeBackgroundDark,
+
+    TabBackground = ThemePanel,
+    TabStroke = ThemeStrokeDark,
+    TabBackgroundSelected = ThemeStroke,
+    TabTextColor = ThemeSubText,
+    SelectedTabTextColor = ThemeText,
+
+    ElementBackground = ThemePanel,
+    ElementBackgroundHover = ThemePanelHover,
+    SecondaryElementBackground = ThemeBackgroundDark,
+    ElementStroke = ThemeStrokeDark,
+    SecondaryElementStroke = ThemeStroke,
+
+    SliderBackground = Color3.fromRGB(45, 80, 150),
+    SliderProgress = ThemeRed,
+    SliderStroke = ThemeStroke,
+
+    ToggleBackground = ThemeBackgroundDark,
+    ToggleEnabled = ThemeGreen,
+    ToggleDisabled = ThemeRed,
+    ToggleEnabledStroke = Color3.fromRGB(120, 255, 165),
+    ToggleDisabledStroke = Color3.fromRGB(255, 110, 125),
+    ToggleEnabledOuterStroke = Color3.fromRGB(20, 150, 70),
+    ToggleDisabledOuterStroke = Color3.fromRGB(155, 20, 35),
+
+    DropdownSelected = ThemePanelHover,
+    DropdownUnselected = ThemePanel,
+
+    InputBackground = ThemeBackgroundDark,
+    InputStroke = ThemeStroke,
+    PlaceholderColor = ThemeSubText
+}
+
 --// Player References
 local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -80,7 +136,7 @@ local StealPromptConnections = {}
 local BestRefineryLine = Drawing.new("Line")
 BestRefineryLine.Visible = false
 BestRefineryLine.Thickness = 2
-BestRefineryLine.Color = Color3.fromRGB(255, 0, 0)
+BestRefineryLine.Color = ThemeRed
 BestRefineryLine.Transparency = 1
 
 local BestRefineryText = Drawing.new("Text")
@@ -88,7 +144,7 @@ BestRefineryText.Visible = false
 BestRefineryText.Size = 16
 BestRefineryText.Center = true
 BestRefineryText.Outline = true
-BestRefineryText.Color = Color3.fromRGB(255, 0, 0)
+BestRefineryText.Color = ThemeText
 BestRefineryText.Transparency = 1
 BestRefineryText.Text = ""
 
@@ -877,7 +933,7 @@ local Window = Rayfield:CreateWindow({
     LoadingTitle = "Oil Empire",
     LoadingSubtitle = "By MenuMan",
     ShowText = "Oil Empire",
-    Theme = "Serenity",
+    Theme = DarkBlueRedTheme,
     ToggleUIKeybind = "K",
 
     DisableRayfieldPrompts = false,
@@ -1026,17 +1082,17 @@ GameTab:CreateSlider({
     end,
 })
 
-local GasPriceLabel = GameTab:CreateLabel("Current GasPrice: loading...", 4483362458, Color3.fromRGB(255, 255, 255), false)
-local PlotStatusLabel = GameTab:CreateLabel("Owned Plot: scanning...", 4483362458, Color3.fromRGB(255, 255, 255), false)
-local InstantStealStatusLabel = GameTab:CreateLabel("Instant Steal: Off", 4483362458, Color3.fromRGB(255, 255, 255), false)
-local BestRefineryStatusLabel = GameTab:CreateLabel("Best Refinery: scanning...", 4483362458, Color3.fromRGB(255, 255, 255), false)
+local GasPriceLabel = GameTab:CreateLabel("Current GasPrice: loading...", 4483362458, ThemeText, false)
+local PlotStatusLabel = GameTab:CreateLabel("Owned Plot: scanning...", 4483362458, ThemeText, false)
+local InstantStealStatusLabel = GameTab:CreateLabel("Instant Steal: Off", 4483362458, ThemeText, false)
+local BestRefineryStatusLabel = GameTab:CreateLabel("Best Refinery: scanning...", 4483362458, ThemeText, false)
 
 local function updateGasPriceLabel()
     local numeric = getNumericGasPrice()
     if numeric then
-        GasPriceLabel:Set("Current GasPrice: $" .. tostring(numeric), 4483362458, Color3.fromRGB(255, 255, 255), false)
+        GasPriceLabel:Set("Current GasPrice: $" .. tostring(numeric), 4483362458, ThemeText, false)
     else
-        GasPriceLabel:Set("Current GasPrice: " .. tostring(GasPriceValue.Value), 4483362458, Color3.fromRGB(255, 255, 255), false)
+        GasPriceLabel:Set("Current GasPrice: " .. tostring(GasPriceValue.Value), 4483362458, ThemeText, false)
     end
 end
 
@@ -1047,14 +1103,14 @@ local function updateOwnedPlotLabel()
         PlotStatusLabel:Set(
             "Owned Plot: " .. ownedPlot.Name,
             4483362458,
-            Color3.fromRGB(255, 255, 255),
+            ThemeText,
             false
         )
     else
         PlotStatusLabel:Set(
             "Owned Plot: not found",
             4483362458,
-            Color3.fromRGB(255, 255, 255),
+            ThemeText,
             false
         )
     end
@@ -1067,9 +1123,9 @@ local function updateInstantStealStatusLabel()
     end
 
     if InstantStealEnabled then
-        InstantStealStatusLabel:Set("Instant Steal: On (" .. tostring(count) .. " prompts)", 4483362458, Color3.fromRGB(255, 255, 255), false)
+        InstantStealStatusLabel:Set("Instant Steal: On (" .. tostring(count) .. " prompts)", 4483362458, ThemeText, false)
     else
-        InstantStealStatusLabel:Set("Instant Steal: Off", 4483362458, Color3.fromRGB(255, 255, 255), false)
+        InstantStealStatusLabel:Set("Instant Steal: Off", 4483362458, ThemeText, false)
     end
 end
 
@@ -1080,14 +1136,14 @@ local function updateBestRefineryStatusLabel()
         BestRefineryStatusLabel:Set(
             "Best Refinery: " .. bestPlot.Name .. " | " .. bestBuilding.Name .. " | " .. tostring(bestRawText or (tostring(bestCurrent) .. "/" .. tostring(bestMax))),
             4483362458,
-            Color3.fromRGB(255, 255, 255),
+            ThemeText,
             false
         )
     else
         BestRefineryStatusLabel:Set(
             "Best Refinery: not found",
             4483362458,
-            Color3.fromRGB(255, 255, 255),
+            ThemeText,
             false
         )
     end
